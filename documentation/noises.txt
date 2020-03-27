@@ -1,0 +1,73 @@
+﻿##  Felipe Coimbra
+##  03/2018
+##
+NOISE IN RECEIVED INFORMATION FROM RCSSSERVER 15.4.0
+
+====== Sense Body
+1- Body Velocity Magnitude
+	- Ranges from 0 to some random number between player_speed_max + player_speed_max_delta_min and  player_speed_max + player_speed_max_delta_max (these deltas are heterogeneous parameters).
+	- Measured absolutely
+	- Quantized with linear quantization function q*ceil(value/q), where q = 0.01.
+
+2- Body Velocity Direction
+	- Ranges from -180 to +180 degrees
+	- Measured related to absolute neck angle(body angle + head angle)
+	- Truncated to integer
+
+3- Neck Angle
+	- Ranges from -90 to +90 degrees
+	- Measured related to body direction
+	- Truncated to integer
+	
+4- PointTo Information
+	1) Cycles untill movable(i.e. may send another pointto command)
+		- No noise
+	2) Cycles untill expires(i.e. pointto is automatically resetted)
+		- No noise
+	3) Distance between the pointed location and your current location
+		- Quantized(rounding, not truncating) to 0.1 (+-0.05 garanteed error)
+	4) Angle of pointed location related to your absolute neck angle
+		- Quantized(rounding, not truncating) to 0.1 (+-0.05 garanteed error)
+		- Value in range (-180, +180] degrees
+	5) Pointto count(number of pointto command effectivated)
+		- No noise
+		
+5- Focus Information
+	May be "none" or:
+	1) Focus side("l"/"r" for left/right)
+		- No noise
+	2) Focused player unum
+		- No noise
+	3) Focus count(number of focus effectivated)
+		- No noise
+		
+6- Tackle Information
+	1) Cycles untill player can tackle again(i.e. end frozen state)
+		- No noise
+	2) Tackle count(number of tackles effectivated)
+		- No noise
+
+7- Collision Information
+	Informs if have collided with any object and the object types:
+	Ball -> (ball)
+	Player -> (player)
+	Post -> (post)
+	No collision -> none
+	
+======
+
+====== Visual
+
+Server distances before sent to the player are quantized by the following formula:
+
+    D_obs = Quantize( exp( Quantize(log(D_real),quantize_step) ), 0.1 )
+
+And Quantize is
+
+    Quantize(d,q) = ceil(d/q)*q
+
+For an intuitive look of how that looks graphically, refer to see_noise.m.
+For moving objects, quantize_step = 0.1. For steady objects, quantize_step = 0.01.
+
+The observed direction is rounded to the nearest integer and then truncated to int. This means it has +-0.5 garanteed error.
+

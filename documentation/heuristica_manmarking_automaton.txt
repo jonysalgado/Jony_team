@@ -1,0 +1,91 @@
+SOCCER2D
+
+##Situation update:
+
+*) Criar estrutura de memória de estratégia
+	*) Guarda:
+			*) Situação de jogo anterior
+			*) Incerteza na veradicidade da situação de jogo anterior
+			*) Contagem de ciclos desde a última ativação de estado incerto
+			*) Contagem de
+
+*) Ignorar update de situação para bola na 3a zona de visão ou alem e ativar estado incerto
+
+*) Se estiver na 2a zona de visão, levar em conta defasagem de ciclos do(a):
+	*) Bola = score de 1 ponto de imprecisão (tolerancia de 0 ciclos)
+	*) Amigo mais próximo = score de 1 ponto de imprecisão (tolerancia de 1 ciclo)
+	*) Inimigo mais próximo = score de 1 ponto de imprecisão (tolerancia de 1 ciclo)
+	
+	Propriedades:
+		1- Se um teammate proximo da bola passa 2 ciclos sem olhar a bola, o estado incerto é inevitavelmente 
+			ativado.
+		2- Só é possível ativar o estado incerto com a bola muito proxima se o jogador não olhar para ela
+		3- Para gerar 2 pontos de imprecisão a qualquer momento, você necessariamente precisa não olhar para
+			a bola
+	
+*) Estimar erro nos dados da situação de jogo levando em conta:
+	*) Distância ao Object em consideração
+		*) No caso da audição, distância do emissor da mensagem ao Object
+		*) Modelo matemático do ruido:	Ruido(r) = ceil(10*exp( ceil(10*log(r) )/10 ))/10 - r
+						Noção intuitiva: Para r = 100, erro < 10
+										 Para r = 10, erro < 1
+		*) Modelo matemático do erro pela distancia:	Erro = ***
+							 
+		*) Fazer media simples das distancias no defensor mais proximo, oponente mais proximo e bola para o calculo do erro.
+
+*) Ativar estado incerto se houver uma imprecisão total
+		Incerteza = WEIGHT1 * Imprecisão + WEIGHT2 * Erro > THRESHOLD
+   
+*) WEIGHTS e THRESHOLD precisam ser otimizados
+	Valor inicial sugerido: WEIGHT1 = 0.66, WEIGHT2 = 0.33, THRESHOLD = 1.31
+
+	Propriedades: 	1- Desse modo, se ocorrerem 2 ou mais pontos de imprecisão, sempre vai ser ativado o estado 						incerto.
+					2- 2 pontos de erro são equivalentes a 1 ponto de incerteza. Isso implica que 1 ponto de
+						incerteza necessita de 2 pontos de erro(só é possivel para r>20) para ativar o estado de 
+						incerteza: a partir da distancia 20 o estado só pode ser ativado pela incerteza.
+					3- 4 pontos de erro são obtidos somente se a distância é maior que 40. Logo para maior que 40,
+						sempre vai ser ativado o estado incerto
+					4- WEIGHT1 + WEIGHT2 < 1 mas bem próximo. Isso previne que um erro de precisão gere uma 						conclusão de ativar o estado incerto
+	Contras:
+					1- Torna relativamente difícil ativar o estado incerto sem haver defasagem. Isso significa 							que, dado que o jogador obtem informação num ciclo, praticamente não importa o quão
+						ruidosa ela esteja. 
+					PROVAVEL SOLUÇÃO: Pensar em um sistema de peso em que WEIGHT1 ative uma constante aditiva
+						ou não de WEIGHT2 de acordo com seu valor nulo ou não nulo.
+					2- Não leva em conta o erro por situações absurdas, como uma variação muito brusca de r.
+					PROVAVEL SOLUÇÃO: Utilizar um R amortizado no calculo. Esse R recebe o novo valor r do World 							Model se o desvio absoluto do r anterior for menor que o desvio padrão acumulado de uma 
+						janela de k valores passados de r. O desvio padrão no entanto é sempre atualizado.
+
+## Marking activation:
+
+	1) Playon Mode
+
+*) Autômato de Ativação/Desativação
+			
+
+linhas : Game Situation anterior
+colunas : Game Situation atual
+
+a = ativar
+d = desativar
+m = manter estado de ativação anterior
+
+i = incerto
+c = certo
+
+D = Defensivo
+O = Ofensivo
+N = Normal
+S = Setplay
+			
+	Di	Dc	Oi	Oc	N	timeout(10 ciclos de estado incerto?)
+Di	m	a	m	m	m	d
+Dc	m	a	m	m?	m	d
+Oi	m	m	m	d	m	d
+Oc	m	m?	m	d	m	d
+N	m	m	m	m	m	m** =>TODO :  Pensar se é melhor desativar ou não?
+S	m	m	m	m	m	d
+
+	2) Setplay Mode
+	
+*) Ativar marcação se a posse for adversária
+

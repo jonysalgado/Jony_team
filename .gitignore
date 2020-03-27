@@ -1,0 +1,73 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.pc
+
+# Compiled Dynamic libraries
+*.so
+*.so.*
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Backup files
+*~
+
+# Binaries
+Jony_team_player
+Jony_team_trainer
+Jony_team_coach
+
+# Autoconf generated files
+*.swp
+.deps/
+autom4te.cache/
+Makefile
+Makefile.in
+config.log
+config.status
+configure
+libtool
+
+# CLion / Eclipse / VSCode project files
+.idea/
+cmake-build-debug/
+*.cbp
+.vscode/
+
+# CMake build directory
+/build/
+/binaries/
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+
+# Match logs
+*.rcg
+*.rcl
+*.ocl
+*.log
+
+# json files
+*.json
+
+# pyc files
+*.pyc
+
+# Doxygen documentation
+/documentation/doxygen/
+
+# Competition release
+itandroids/
+
+#Testing
+Testing/Temporary/
+
+# Vim specific files
+tags
+
+\.ycm_extra_conf\.py
+
